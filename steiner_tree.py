@@ -22,9 +22,9 @@ class SteinerTree:
         points_y = [y for (x, y) in terminals]
 
         # init grid
-        grid = list(itertools.combinations(range(max(max(points_x), max(points_y))), 2))
+        grid = list(itertools.combinations(range(max(max(points_x), max(points_y))+1), 2))
         grid += [(y, x) for (x, y) in grid]
-        grid += [(x, x) for x in range(max(max(points_x), max(points_y)))]
+        grid += [(x, x) for x in range(max(max(points_x), max(points_y))+1)]
 
         # init grid where could be steiner points
         span_grid = [(x, y) for (x, y) in grid if ((x in points_x) and (y in points_y))]
@@ -43,6 +43,8 @@ class SteinerTree:
         self.solution_graph = ()
 
         self.maximum_steiner_points_number = 6
+        self.time = None
+
 
     def calculate_weight(self, steiner_points):
         min_weight = 10000000
@@ -81,7 +83,9 @@ class SteinerTree:
 
         self.statistic = Counter((weight for weight, tree in global_results))
         self.solution_graph = min(global_results, key=lambda res: res[0])[1]
-        print(time.time() - t, "s")
+
+        self.time = time.time()-t
+
 
     def complexity(self):
         all_cases_n = sum(self.statistic.values())
@@ -89,7 +93,7 @@ class SteinerTree:
         best_cases_n = self.statistic[best_case]
         return best_case, best_cases_n, best_cases_n / all_cases_n * 1000000, self.statistic
 
-    def manhattan_solution(self, show=True):
+    def manhattan_solution(self, show=True, title = None):
         edges = list(self.solution_graph)
         manhattan_edges = []
         for e in self.solution_graph:
@@ -102,16 +106,20 @@ class SteinerTree:
             if randint(0, 1) == 0:
                 help_p = (e[0][0], e[1][1])
             if show:
-                plt.scatter(help_p[0], help_p[1], c="grey")
+                plt.scatter(help_p[0], help_p[1], c="black")
             manhattan_edges += self.line_to_one_lines((e[0], help_p))
             manhattan_edges += self.line_to_one_lines((help_p, e[1]))
 
         if show:
-            plt.scatter([x for (x, y) in self.terminals], [y for (x, y) in self.terminals])
-            for e in self.solution_graph:
-                plt.plot([e[0][0], e[1][0]], [e[0][1], e[1][1]], c="r")
+            plt.scatter([x for (x, y) in self.terminals], [y for (x, y) in self.terminals], c="r")
+            #for e in self.solution_graph:
+            #    plt.plot([e[0][0], e[1][0]], [e[0][1], e[1][1]], c="r")
             for e in manhattan_edges:
-                plt.plot([e[0][0], e[1][0]], [e[0][1], e[1][1]], c="grey", lw=0.5)
+                plt.plot([e[0][0], e[1][0]], [e[0][1], e[1][1]], c="black", lw=0.5)
+
+            if title is not None:
+                plt.title(title)
+
             plt.show()
 
         return manhattan_edges
